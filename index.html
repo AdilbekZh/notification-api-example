@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="utf-8">
+<head>
+    <title>Example of Notification API</title>
+    <meta charset="utf-8">
+    <script>
+
+        function NotificationHelper() {
+
+            if (!("Notification" in window)) {
+                throw Error("Notification not supported on this browser");
+                return;
+            }
+
+            this.state = Notification.permission.toLowerCase();
+
+            function onRequestedCallback(permission) {
+                this.state = permission;
+            }
+
+            function isAllowed() {
+                switch ( this.state ) {
+                    case "granted":
+                        return 1;
+                    case "denied":
+                        return -1;
+                    case "default":
+                        return 0;
+                    default:
+                      return -2;
+                }
+            }
+
+            function onError(err) {
+                console.error("onError "+err);
+            }
+
+            function onClose(msg) {
+                console.log("onClose " +msg);
+            }
+
+            function onClick(msg) {
+                console.log("onClick "+msg);
+            }
+
+            if (isAllowed() != 1)
+                Notification.requestPermission(onRequestedCallback);
+                    
+
+            this.notify = function(title, content, icon) {
+                console.log("Notify " + isAllowed());
+                if (isAllowed() == 1) {
+                    var dynOptions = {
+                        tag : "ache-mail",
+                        body : content
+                    };
+
+                    if (icon !== undefined)
+                        dynOptions.icon = icon;
+
+                    var notification = new Notification(title, dynOptions);
+
+                    notification.onerror = onError;
+                    notification.onclose = onClose;
+                    notification.onclick = onClick;
+                }
+            }
+
+        }
+
+        var notificationHelper = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                notificationHelper = new NotificationHelper();
+            } catch(e) {
+                alert(e);
+            }
+        });
+
+        function notifyMe() {
+            notificationHelper.notify("hello", "bro", "http://www.kazpost.kz/header_logo_img_ru.png");
+        }
+
+    </script>
+</head>
+<body>
+<button onclick="notifyMe();">Notify me</button>
+</body>
+</html>
